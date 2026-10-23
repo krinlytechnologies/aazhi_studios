@@ -51,6 +51,13 @@ export default function CinematicExperience() {
 
     mm.add(
       {
+        // "all" always matches, so gsap.matchMedia's callback fires immediately on
+        // registration no matter which breakpoint the device starts at. Without it,
+        // GSAP only invokes the callback once some listed query is *currently* true —
+        // on a phone that's never >=768px wide, `desktop` and `reduced` both start
+        // (and stay) false, so the callback — and therefore every ScrollTrigger this
+        // scene depends on — would never run at all. See MatchMedia.add in gsap-core.
+        all: "all",
         reduced: "(prefers-reduced-motion: reduce)",
         desktop: "(min-width: 768px)",
       },
