@@ -67,7 +67,7 @@ export default function VillaJourneyExperience() {
     return () => observer.disconnect();
   }, []);
 
-  const { status, setProgress } = useFrameSequence({
+  const { status, setProgress, firstFrameReady } = useFrameSequence({
     canvasRef,
     frameCount: VILLA_JOURNEY_SEQUENCE.frameCount,
     getFrameSrc: getVillaJourneyFrameSrc,
@@ -162,7 +162,7 @@ export default function VillaJourneyExperience() {
     return () => mm.revert();
   }, [setProgress]);
 
-  const showLoadingHint = nearViewport && status === "idle" && !reducedMotion;
+  const showLoadingHint = nearViewport && !firstFrameReady && status !== "missing" && !reducedMotion;
   const showDevNotice = process.env.NODE_ENV !== "production" && status === "missing";
 
   return (

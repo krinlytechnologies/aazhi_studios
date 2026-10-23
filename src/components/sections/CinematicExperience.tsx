@@ -17,7 +17,6 @@ export default function CinematicExperience() {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const identityRef = useRef<HTMLDivElement | null>(null);
   const labelRef = useRef<HTMLDivElement | null>(null);
-  const bridgeRef = useRef<HTMLDivElement | null>(null);
 
   // Starts false so server and client render identically; an effect corrects it.
   const [reducedMotion, setReducedMotion] = useState(false);
@@ -46,8 +45,7 @@ export default function CinematicExperience() {
     const section = sectionRef.current;
     const identity = identityRef.current;
     const label = labelRef.current;
-    const bridge = bridgeRef.current;
-    if (!section || !identity || !label || !bridge) return;
+    if (!section || !identity || !label) return;
 
     const mm = gsap.matchMedia();
 
@@ -58,8 +56,6 @@ export default function CinematicExperience() {
       },
       (context) => {
         const { reduced, desktop } = context.conditions as { reduced: boolean; desktop: boolean };
-
-        gsap.set(bridge, { opacity: 0 });
 
         if (reduced) {
           // Stable representative frame (the first — this scene's "poster" shot), no
@@ -79,7 +75,6 @@ export default function CinematicExperience() {
         textTl.to(identity, { opacity: 0, duration: 0.12, ease: "power1.out" }, 0.02);
         textTl.to(label, { opacity: 1, y: 0, duration: 0.1, ease: "power2.out" }, 0.55);
         textTl.to(label, { opacity: 0, y: -14, duration: 0.08, ease: "power1.in" }, 0.88);
-        textTl.to(bridge, { opacity: 1, duration: 0.1, ease: "power1.in" }, 0.9);
         textTl.progress(0);
 
         const onUpdate = (self: ScrollTrigger) => {
@@ -158,9 +153,6 @@ export default function CinematicExperience() {
         <span className="eyebrow text-ivory/70">01 — ARRIVAL</span>
         <h3 className="heading-display mt-2 text-3xl sm:text-4xl">A quieter kind of arrival.</h3>
       </div>
-
-      {/* Fades to charcoal, not ivory: the Villa Journey scene follows next, not Our Story. */}
-      <div ref={bridgeRef} className="pointer-events-none absolute inset-0 z-20 bg-charcoal opacity-0" />
 
       {showLoadingHint && (
         <div className="pointer-events-none absolute bottom-6 left-1/2 z-10 -translate-x-1/2">

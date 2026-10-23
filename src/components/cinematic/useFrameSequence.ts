@@ -37,6 +37,12 @@ interface UseFrameSequenceResult {
   status: FrameSequenceStatus;
   loadedCount: number;
   frameCount: number;
+  /**
+   * True once a real sequence frame (not the poster/fallback) has been decoded
+   * and actually drawn to the canvas. Distinct from `status === "ready"`, which
+   * only means a frame finished loading — this confirms it was painted.
+   */
+  firstFrameReady: boolean;
   /** Normalized scroll progress (0..1). Safe to call every animation frame — does not re-render React. */
   setProgress: (progress: number) => void;
 }
@@ -109,6 +115,8 @@ export function useFrameSequence({
 }: UseFrameSequenceOptions): UseFrameSequenceResult {
   const [status, setStatus] = useState<FrameSequenceStatus>("idle");
   const [loadedCount, setLoadedCount] = useState(0);
+  const [firstFrameReady, setFirstFrameReady] = useState(false);
+  const firstFrameReadyRef = useRef(false);
 
   const cacheRef = useRef<Map<number, DecodedFrame>>(new Map());
   const failedRef = useRef<Set<number>>(new Set());
@@ -163,6 +171,12 @@ export function useFrameSequence({
     [canvasRef, debugLabel]
   );
 
+  const markFirstFrameReady = useCallback(() => {
+    if (firstFrameReadyRef.current) return;
+    firstFrameReadyRef.current = true;
+    setFirstFrameReady(true);
+  }, []);
+
   const renderNearestToTarget = useCallback(() => {
     const target = targetIndexRef.current;
     const cache = cacheRef.current;
@@ -171,6 +185,7 @@ export function useFrameSequence({
       if (drawnIndexRef.current !== target) {
         drawFrame(cache.get(target) ?? null);
         drawnIndexRef.current = target;
+        markFirstFrameReady();
       }
       return;
     }
@@ -191,12 +206,13 @@ export function useFrameSequence({
       if (drawnIndexRef.current !== bestIndex) {
         drawFrame(cache.get(bestIndex) ?? null);
         drawnIndexRef.current = bestIndex;
+        markFirstFrameReady();
       }
     } else if (posterRef.current && drawnIndexRef.current !== -2) {
       drawFrame(posterRef.current);
       drawnIndexRef.current = -2;
     }
-  }, [drawFrame]);
+  }, [drawFrame, markFirstFrameReady]);
 
   const scheduleRender = useCallback(() => {
     if (rafRef.current !== null) return;
@@ -431,5 +447,5 @@ export function useFrameSequence({
     [frameCount, scheduleRender]
   );
 
-  return { status, loadedCount, frameCount, setProgress };
+  return { status, loadedCount, frameCount, firstFrameReady, setProgress };
 }
