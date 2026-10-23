@@ -142,16 +142,16 @@ export default function CinematicExperience() {
         ref={identityRef}
         className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center gap-3 text-center"
       >
-        <span className="eyebrow text-ivory/70">An Interior Design Journey</span>
-        <h2 className="heading-display text-5xl sm:text-6xl">Aazhi Studio</h2>
+        <span className="eyebrow text-ivory/70">An Interior Design</span>
+        <h1 className="heading-display text-5xl sm:text-6xl">Azhi Studio&apos;s</h1>
       </div>
 
       <div
         ref={labelRef}
         className="absolute bottom-10 left-0 w-full px-6 sm:bottom-14 sm:px-10 md:bottom-16 md:px-16"
       >
-        <span className="eyebrow text-ivory/70">01 — ARRIVAL</span>
-        <h3 className="heading-display mt-2 text-3xl sm:text-4xl">A quieter kind of arrival.</h3>
+        <span className="eyebrow text-ivory/70"></span>
+        <h3 className="heading-display mt-2 text-3xl sm:text-4xl">The Art of Entering.</h3>
       </div>
 
       {showLoadingHint && (

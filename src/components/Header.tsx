@@ -11,8 +11,9 @@ export default function Header() {
   return (
     <header className="sticky top-0 z-50 border-b border-brown/10 bg-ivory/90 backdrop-blur-sm">
       <div className="container-editorial flex h-20 items-center justify-between">
-        <Link href="/" className="heading-display text-xl text-brown sm:text-2xl">
-          Aazhi Studio
+        <Link href="/" className="flex items-center">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/logo-transparent.png" alt="Azhi Studio" className="h-10 w-auto sm:h-12" />
         </Link>
         <nav className="hidden items-center gap-10 md:flex">
           {NAV_LINKS.map((link) => (

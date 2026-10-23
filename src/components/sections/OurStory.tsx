@@ -8,7 +8,7 @@ export default function OurStory() {
             Spaces designed around how you actually live.
           </h2>
           <p className="mt-6 text-lg leading-relaxed text-charcoal/80">
-            Aazhi Studio approaches interior design as a quiet, deliberate craft —
+            Azhi Studio approaches interior design as a quiet, deliberate craft —
             pairing architectural discipline with warmth, texture, and restraint.
           </p>
         </div>

@@ -7,7 +7,7 @@ import { useFrameSequence } from "@/components/cinematic/useFrameSequence";
 import {
   VILLA_JOURNEY_SEQUENCE,
   VILLA_JOURNEY_POSTER_SOURCES,
-  VILLA_JOURNEY_TEXT_BEATS,
+  VILLA_JOURNEY_ASSIGNED_TEXT_BEATS,
   getVillaJourneyFrameSrc,
   type TextBeatAlign,
 } from "@/lib/cinematic/villa-journey-sequence";
@@ -28,8 +28,9 @@ function alignClassName(align: TextBeatAlign | undefined): string {
  * using the same canvas frame-sequence engine (useFrameSequence). Structurally mirrors
  * CinematicExperience.tsx (Arrival) — see that file's comments for the shared pattern;
  * differences here are: a much longer sequence, lazy-started streaming (so Arrival
- * isn't competing for bandwidth), and a frame-synchronized text-beat list that is
- * currently empty — see docs/cinematic-assets.md and villa-journey-sequence.ts.
+ * isn't competing for bandwidth), and a frame-synchronized text-beat list whose
+ * titles are set but whose frame ranges are still unassigned — see
+ * docs/cinematic-assets.md and villa-journey-sequence.ts.
  */
 export default function VillaJourneyExperience() {
   const sectionRef = useRef<HTMLDivElement | null>(null);
@@ -84,10 +85,10 @@ export default function VillaJourneyExperience() {
     const bridge = bridgeRef.current;
     if (!section || !bridge) return;
 
-    const beats = VILLA_JOURNEY_TEXT_BEATS.map((_, i) => beatRefs.current[i]).filter(
+    const beats = VILLA_JOURNEY_ASSIGNED_TEXT_BEATS.map((_, i) => beatRefs.current[i]).filter(
       (el): el is HTMLDivElement => Boolean(el)
     );
-    if (beats.length !== VILLA_JOURNEY_TEXT_BEATS.length) return;
+    if (beats.length !== VILLA_JOURNEY_ASSIGNED_TEXT_BEATS.length) return;
 
     const mm = gsap.matchMedia();
 
@@ -113,7 +114,7 @@ export default function VillaJourneyExperience() {
         const lastFrame = VILLA_JOURNEY_SEQUENCE.frameCount - 1;
         const textTl = gsap.timeline({ paused: true });
 
-        VILLA_JOURNEY_TEXT_BEATS.forEach((beat, i) => {
+        VILLA_JOURNEY_ASSIGNED_TEXT_BEATS.forEach((beat, i) => {
           const el = beats[i];
           const startP = Math.min(1, Math.max(0, beat.startFrame / lastFrame));
           const endP = Math.min(1, Math.max(startP, beat.endFrame / lastFrame));
@@ -185,7 +186,7 @@ export default function VillaJourneyExperience() {
 
       <div className="absolute inset-0 bg-gradient-to-t from-charcoal/70 via-charcoal/5 to-transparent" />
 
-      {VILLA_JOURNEY_TEXT_BEATS.map((beat, i) => (
+      {VILLA_JOURNEY_ASSIGNED_TEXT_BEATS.map((beat, i) => (
         <div
           key={`${beat.startFrame}-${beat.endFrame}`}
           ref={(el) => {

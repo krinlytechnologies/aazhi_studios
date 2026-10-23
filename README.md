@@ -1,4 +1,4 @@
-# Aazhi Studio
+# Azhi Studio
 
 A premium interior design website — editorial, image-led, built with Next.js.
 
@@ -24,12 +24,12 @@ npm run lint    # eslint
 Colour tokens (defined in `src/app/globals.css`, exposed as Tailwind utilities
 `bg-ivory`, `text-brown`, `bg-stone`, `bg-charcoal`, etc.):
 
-| Token         | Hex       |
-| ------------- | --------- |
-| Warm Ivory    | `#F1EAE0` |
-| Deep Brown    | `#4A382D` |
-| Stone Beige   | `#D2C2AD` |
-| Charcoal      | `#34332F` |
+| Token       | Hex       |
+| ----------- | --------- |
+| Warm Ivory  | `#F1EAE0` |
+| Deep Brown  | `#4A382D` |
+| Stone Beige | `#D2C2AD` |
+| Charcoal    | `#34332F` |
 
 Typography: **Fraunces** (serif, `.heading-display`) for headings, **Work Sans**
 (`--font-sans`) for body copy. Shared layout conventions live in
