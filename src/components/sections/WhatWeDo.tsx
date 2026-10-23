@@ -8,8 +8,8 @@ const SERVICES = [
     description: "Layouts that resolve flow, light, and function before a single material is chosen.",
   },
   {
-    title: "Material & Finish Direction",
-    description: "Considered palettes of material, texture, and finish tailored to each project.",
+    title: "Commercial Interiors",
+    description: "Thoughtful commercial spaces designed to balance brand identity, functionality, and a refined aesthetic.",
   },
   {
     title: "Bespoke Furniture & Styling",

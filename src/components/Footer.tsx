@@ -11,7 +11,7 @@ export default function Footer() {
             <p className="heading-display text-xl">Aazhi Studio</p>
           </div>
           <p className="mt-2 max-w-sm text-sm text-ivory/70">
-            Interior design that shapes space around how you actually live.
+            Inspired by the depth, vastness and layers of the ocean.
           </p>
         </div>
         <div className="flex gap-10 text-sm">
@@ -28,6 +28,14 @@ export default function Footer() {
             <span className="eyebrow text-ivory/50">Connect</span>
             <a href="#contact" className="text-ivory/80 hover:text-ivory">
               Contact
+            </a>
+            <a
+              href="https://www.instagram.com/aazhi_studio"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-ivory/80 hover:text-ivory"
+            >
+              Instagram
             </a>
           </div>
         </div>
