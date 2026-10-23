@@ -50,9 +50,7 @@ export default function SpaceShapedByPurpose() {
             <div key={category.label}>
               <div className="flex items-baseline justify-between">
                 <h3 className="heading-display text-2xl text-ivory">{category.label}</h3>
-                <span className="eyebrow text-ivory/40">
-                  {String(category.images.length).padStart(2, "0")} views
-                </span>
+                
               </div>
 
               <div className="mt-5 flex snap-x snap-mandatory gap-4 overflow-x-auto pb-2 [scrollbar-width:thin]">
