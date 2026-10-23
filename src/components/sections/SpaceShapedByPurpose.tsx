@@ -74,7 +74,7 @@ export default function SpaceShapedByPurpose() {
           ))}
         </div>
 
-        <p className="eyebrow mt-12 text-ivory/40">Project portfolio coming soon</p>
+        
       </div>
     </section>
   );
