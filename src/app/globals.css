@@ -1,0 +1,57 @@
+@import "tailwindcss";
+
+:root {
+  --color-ivory: #f1eae0;
+  --color-brown: #4a382d;
+  --color-stone: #d2c2ad;
+  --color-charcoal: #34332f;
+
+  --background: var(--color-ivory);
+  --foreground: var(--color-charcoal);
+}
+
+@theme inline {
+  --color-ivory: var(--color-ivory);
+  --color-brown: var(--color-brown);
+  --color-stone: var(--color-stone);
+  --color-charcoal: var(--color-charcoal);
+
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+
+  --font-serif: var(--font-fraunces);
+  --font-sans: var(--font-work-sans);
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans);
+}
+
+/* Shared layout conventions */
+.section {
+  padding-block: clamp(4rem, 10vw, 8rem);
+}
+
+.container-editorial {
+  width: 100%;
+  max-width: 90rem;
+  margin-inline: auto;
+  padding-inline: clamp(1.5rem, 5vw, 5rem);
+}
+
+.heading-display {
+  font-family: var(--font-serif);
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  line-height: 1.05;
+}
+
+.eyebrow {
+  font-family: var(--font-sans);
+  font-size: 0.8rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  font-weight: 500;
+}

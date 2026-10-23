@@ -1,0 +1,37 @@
+import Link from "next/link";
+
+const NAV_LINKS = [
+  { href: "#our-story", label: "Our Story" },
+  { href: "#what-we-do", label: "What We Do" },
+  { href: "#projects", label: "Projects" },
+  { href: "#contact", label: "Contact" },
+];
+
+export default function Header() {
+  return (
+    <header className="sticky top-0 z-50 border-b border-brown/10 bg-ivory/90 backdrop-blur-sm">
+      <div className="container-editorial flex h-20 items-center justify-between">
+        <Link href="/" className="heading-display text-xl text-brown sm:text-2xl">
+          Aazhi Studio
+        </Link>
+        <nav className="hidden items-center gap-10 md:flex">
+          {NAV_LINKS.map((link) => (
+            <a
+              key={link.href}
+              href={link.href}
+              className="eyebrow text-brown/80 transition-colors hover:text-brown"
+            >
+              {link.label}
+            </a>
+          ))}
+        </nav>
+        <a
+          href="#contact"
+          className="eyebrow rounded-full border border-brown px-5 py-2 text-brown transition-colors hover:bg-brown hover:text-ivory"
+        >
+          Enquire
+        </a>
+      </div>
+    </header>
+  );
+}
