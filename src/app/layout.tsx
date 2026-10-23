@@ -16,9 +16,9 @@ const workSans = Work_Sans({
 });
 
 export const metadata: Metadata = {
-  title: "Azhi Studio — Interior Design",
+  title: "Aazhi Studio — Interior Design",
   description:
-    "Azhi Studio designs interiors that shape space around how you actually live.",
+    "Aazhi Studio designs interiors that shape space around how you actually live.",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

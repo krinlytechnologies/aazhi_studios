@@ -19,11 +19,11 @@ export const ARRIVAL_SEQUENCE = {
   legacyFallbackSrc: "/images/cinematic/scene-01.png",
   desktop: {
     /**
-     * Pinned scroll distance. ~4vh per frame across 48 frames: enough room to resolve
-     * each frame distinctly on a slow scroll without turning this into a multi-screen
-     * scroll-trap. Deliberately shorter than a long multi-scene sequence would need.
+     * Pinned scroll distance. ~6.25vh per frame across 48 frames — raised from 200vh
+     * (4vh/frame), which read as too fast: the 48 frames resolved over barely 2 screen
+     * heights of scroll. Still short of a multi-screen scroll-trap.
      */
-    scrollDistanceVh: 200,
+    scrollDistanceVh: 1500,
   },
 } as const;
 

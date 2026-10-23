@@ -7,8 +7,8 @@ export default function Footer() {
         <div>
           <div className="flex items-center gap-3">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/logo-transparent.png" alt="Azhi Studio" className="h-10 w-10" />
-            <p className="heading-display text-xl">Azhi Studio</p>
+            <img src="/logo-transparent.png" alt="Aazhi Studio" className="h-10 w-10" />
+            <p className="heading-display text-xl">Aazhi Studio</p>
           </div>
           <p className="mt-2 max-w-sm text-sm text-ivory/70">
             Interior design that shapes space around how you actually live.
@@ -33,7 +33,7 @@ export default function Footer() {
         </div>
       </div>
       <div className="container-editorial border-t border-ivory/10 py-6 text-xs text-ivory/50">
-        © {currentYear} Azhi Studio. All rights reserved.
+        © {currentYear} Aazhi Studio. All rights reserved.
       </div>
     </footer>
   );

@@ -14,13 +14,13 @@ export const VILLA_JOURNEY_SEQUENCE = {
   posterSrc: "/images/cinematic/villa-journey-poster.jpg",
   desktop: {
     /**
-     * Pinned scroll distance. Deliberately NOT a 1:1 scaling of Arrival's ~4vh/frame
-     * (653 * 4 ≈ 2600vh would be a multi-screen scroll trap). This is a continuous
-     * walkthrough meant to be scrubbed through, not 653 individually-savored stills,
-     * so it gets a much lower ~0.9vh/frame — generous enough to resolve motion
-     * smoothly, short enough to stay a single comfortable scroll passage.
+     * Pinned scroll distance. Deliberately NOT a 1:1 scaling of Arrival's ~6.25vh/frame
+     * (653 * 6.25 ≈ 4080vh would be a multi-screen scroll trap). This is a continuous
+     * walkthrough meant to be scrubbed through, not 653 individually-savored stills, so
+     * it gets a lower ~1.4vh/frame — raised from 600vh (~0.9vh/frame), which read as
+     * too fast — while staying a single comfortable scroll passage.
      */
-    scrollDistanceVh: 600,
+    scrollDistanceVh: 2500,
   },
 } as const;
 

@@ -1,4 +1,4 @@
-# Azhi Studio
+# Aazhi Studio
 
 A premium interior design website — editorial, image-led, built with Next.js.
 

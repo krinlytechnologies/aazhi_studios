@@ -150,7 +150,7 @@ export default function CinematicExperience() {
         className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center gap-3 text-center"
       >
         <span className="eyebrow text-ivory/70">An Interior Design</span>
-        <h1 className="heading-display text-5xl sm:text-6xl">Azhi Studio&apos;s</h1>
+        <h1 className="heading-display text-5xl sm:text-6xl">Aazhi Studio&apos;s</h1>
       </div>
 
       <div

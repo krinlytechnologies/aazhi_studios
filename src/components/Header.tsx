@@ -1,4 +1,5 @@
 import Link from "next/link";
+import EnquiryModal from "@/components/EnquiryModal";
 
 const NAV_LINKS = [
   { href: "#our-story", label: "Our Story" },
@@ -13,7 +14,7 @@ export default function Header() {
       <div className="container-editorial flex h-20 items-center justify-between">
         <Link href="/" className="flex items-center">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/logo-transparent.png" alt="Azhi Studio" className="h-10 w-auto sm:h-12" />
+          <img src="/logo-transparent.png" alt="Aazhi Studio" className="h-10 w-auto sm:h-12" />
         </Link>
         <nav className="hidden items-center gap-10 md:flex">
           {NAV_LINKS.map((link) => (
@@ -26,12 +27,7 @@ export default function Header() {
             </a>
           ))}
         </nav>
-        <a
-          href="#contact"
-          className="eyebrow rounded-full border border-brown px-5 py-2 text-brown transition-colors hover:bg-brown hover:text-ivory"
-        >
-          Enquire
-        </a>
+        <EnquiryModal />
       </div>
     </header>
   );

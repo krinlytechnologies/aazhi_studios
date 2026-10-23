@@ -1,3 +1,5 @@
+import EnquiryModal from "@/components/EnquiryModal";
+
 export default function Contact() {
   return (
     <section id="contact" className="section bg-ivory">
@@ -8,9 +10,12 @@ export default function Contact() {
             Start a conversation about your space.
           </h2>
           <p className="mt-6 text-lg leading-relaxed text-charcoal/80">
-            Reach out to discuss a project — details on how to get in touch will
-            appear here.
+            Share a few details about your project and we&apos;ll get back to you
+            over WhatsApp.
           </p>
+          <div className="mt-8">
+            <EnquiryModal triggerClassName="eyebrow rounded-full bg-brown px-6 py-3 text-ivory transition-colors hover:bg-charcoal" />
+          </div>
         </div>
       </div>
     </section>
