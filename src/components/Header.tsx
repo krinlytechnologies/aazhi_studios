@@ -10,7 +10,7 @@ const NAV_LINKS = [
 
 export default function Header() {
   return (
-    <header className="sticky top-0 z-50 border-b border-brown/10 bg-ivory/90 backdrop-blur-sm">
+    <header className="sticky top-0 z-50 border-b border-brown/15 bg-stone/90 backdrop-blur-sm">
       <div className="container-editorial flex h-20 items-center justify-between">
         <Link href="/" className="flex items-center">
           {/* eslint-disable-next-line @next/next/no-img-element */}

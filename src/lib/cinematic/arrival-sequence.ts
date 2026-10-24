@@ -23,7 +23,7 @@ export const ARRIVAL_SEQUENCE = {
      * (4vh/frame), which read as too fast: the 48 frames resolved over barely 2 screen
      * heights of scroll. Still short of a multi-screen scroll-trap.
      */
-    scrollDistanceVh: 1500,
+    scrollDistanceVh: 2500,
   },
 } as const;
 
