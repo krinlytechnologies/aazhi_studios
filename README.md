@@ -29,7 +29,7 @@ Colour tokens (defined in `src/app/globals.css`, exposed as Tailwind utilities
 | Warm Ivory  | `#F1EAE0` |
 | Deep Brown  | `#4A382D` |
 | Stone Beige | `#D2C2AD` |
-| Charcoal    | `#34332F` |
+| charcoal    | `#34332F` |
 
 Typography: **Fraunces** (serif, `.heading-display`) for headings, **Work Sans**
 (`--font-sans`) for body copy. Shared layout conventions live in

@@ -1,0 +1,11 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  // Rename this to match the Cloudflare Pages project you create/connect —
+  // it must equal the project name exactly for `wrangler pages deploy` to
+  // target the right project.
+  "name": "aazhi-studios",
+  // `next build` (with `output: "export"` in next.config.ts) writes a plain
+  // static site here — Cloudflare Pages serves it directly, no adapter needed.
+  "pages_build_output_dir": "out",
+  "compatibility_date": "2026-10-25"
+}
