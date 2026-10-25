@@ -1,11 +1,15 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
-  // Rename this to match the Cloudflare Pages project you create/connect —
-  // it must equal the project name exactly for `wrangler pages deploy` to
-  // target the right project.
+  // Rename this to match your actual Cloudflare project name if different.
   "name": "aazhi-studios",
-  // `next build` (with `output: "export"` in next.config.ts) writes a plain
-  // static site here — Cloudflare Pages serves it directly, no adapter needed.
-  "pages_build_output_dir": "out",
-  "compatibility_date": "2026-10-25"
+  "compatibility_date": "2026-10-25",
+  // Cloudflare's build pipeline here runs `npx wrangler deploy` (the Workers
+  // command), not `wrangler pages deploy` — so this ships as a Worker with no
+  // script of its own, serving the static export purely via Workers' built-in
+  // static-assets feature (Cloudflare's current unified replacement for the
+  // old separate Pages product). `next build` (with `output: "export"` in
+  // next.config.ts) writes that static site to `out/`.
+  "assets": {
+    "directory": "out"
+  }
 }

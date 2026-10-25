@@ -10,7 +10,7 @@
     "build": "next build",
     "start": "serve out",
     "lint": "eslint",
-    "pages:deploy": "next build && wrangler pages deploy out"
+    "deploy": "next build && wrangler deploy"
   },
   "dependencies": {
     "gsap": "^3.15.0",
