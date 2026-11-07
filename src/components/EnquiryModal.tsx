@@ -23,7 +23,7 @@ const EMPTY_FORM: EnquiryFormState = {
 
 function buildWhatsAppUrl(form: EnquiryFormState): string {
   const message = [
-    "New enquiry from the Aazhi Studio website:",
+    "New enquiry from the Hash Theory website:",
     "",
     `Project type: ${form.projectType}`,
     `Location: ${form.location}`,

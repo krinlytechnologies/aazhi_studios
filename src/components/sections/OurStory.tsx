@@ -8,22 +8,22 @@ export default function OurStory() {
             Depth is more than what we see.
           </h2>
           <p className="mt-6 text-lg leading-relaxed text-charcoal/80">
-            Inspired by the Tamil word Aazhi (ஆழி), Aazhi Studio embraces the idea
-            that every space holds something deeper than its surface.
+            Hash Theory embraces the idea that every space holds something
+            deeper than its surface — a structure beneath the form.
           </p>
           <p className="mt-4 text-lg leading-relaxed text-charcoal/80">
-            Like the ocean, design has layers — form, material, texture, light and
+            Like a theory, design has layers — form, material, texture, light and
             emotion. When these elements come together with intention, a space
             becomes more than a visual experience; it becomes something to feel,
             live in and remember.
           </p>
           <p className="mt-4 text-lg leading-relaxed text-charcoal/80">
-            At Aazhi Studio, we explore these layers to create interiors that are
+            At Hash Theory, we explore these layers to create interiors that are
             thoughtful, distinctive and deeply connected to the people who inhabit
             them.
           </p>
           <p className="mt-6 text-lg font-medium text-brown">
-            Aazhi Studio — Creating spaces with depth.
+            Hash Theory — Creating spaces with depth.
           </p>
         </div>
       </div>

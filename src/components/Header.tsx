@@ -14,7 +14,7 @@ export default function Header() {
       <div className="container-editorial flex h-20 items-center justify-between">
         <Link href="/" className="flex items-center">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/logo-transparent.png" alt="Aazhi Studio" className="h-10 w-auto sm:h-12" />
+          <img src="/logo-transparent.png" alt="Hash Theory" className="h-10 w-auto sm:h-12" />
         </Link>
         <nav className="hidden items-center gap-10 md:flex">
           {NAV_LINKS.map((link) => (

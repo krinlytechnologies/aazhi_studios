@@ -20,7 +20,7 @@ export const VILLA_JOURNEY_SEQUENCE = {
      * it gets a lower ~1.4vh/frame — raised from 600vh (~0.9vh/frame), which read as
      * too fast — while staying a single comfortable scroll passage.
      */
-    scrollDistanceVh: 11500,
+    scrollDistanceVh: 15500,
   },
 } as const;
 
