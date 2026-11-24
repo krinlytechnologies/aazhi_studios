@@ -43,5 +43,10 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
-villa-journey.mp4
-arrival.mp4
+
+# full-quality source masters for the cinematic hero video (re-encoded,
+# smaller copies live in public/videos and ARE committed — only these
+# root-level originals are excluded; the leading slash matters here, since
+# a bare pattern would also match public/videos/villa-journey.mp4)
+/villa-journey.mp4
+/arrival.mp4
