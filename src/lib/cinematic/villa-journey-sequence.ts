@@ -1,55 +1,33 @@
 /**
- * Asset contract for the "Villa Journey" frame sequence — the continuous walkthrough
- * that follows Arrival. See docs/cinematic-assets.md for the extraction contract.
+ * Config for the "Villa Journey" scroll-scrubbed hero video — a single
+ * continuous walkthrough clip the user scrubs through by scrolling.
  */
 export const VILLA_JOURNEY_SEQUENCE = {
-  /** Folder of extracted frames, relative to /public. */
-  basePath: "/images/cinematic/villa-journey",
-  /** Zero-padded digits in `frame-0001.webp` style filenames. */
-  frameNumberPadding: 4,
-  frameExtension: "webp",
-  /** 55s source clip extracted at 12fps. Confirmed on disk — do not assume 660. */
+  videoSrc: "/videos/villa-journey.mp4",
+  posterSrc: "/images/cinematic/villa-journey-poster.png",
+  /**
+   * Virtual frame count the text beats below are authored against (12fps over
+   * the clip's ~54s) — only used as a denominator to turn a beat's
+   * startFrame/endFrame into a 0..1 scroll-progress fraction. The actual video
+   * file's real fps/duration don't need to match this; scrubbing sets
+   * `video.currentTime` directly from scroll progress.
+   */
   frameCount: 653,
-  /** Does not exist yet — see VILLA_JOURNEY_POSTER_SOURCES for the fallback. */
-  posterSrc: "/images/cinematic/villa-journey-poster.jpg",
   desktop: {
     /**
-     * Pinned scroll distance. Deliberately NOT a 1:1 scaling of Arrival's ~6.25vh/frame
-     * (653 * 6.25 ≈ 4080vh would be a multi-screen scroll trap). This is a continuous
-     * walkthrough meant to be scrubbed through, not 653 individually-savored stills, so
-     * it gets a lower ~1.4vh/frame — raised from 600vh (~0.9vh/frame), which read as
-     * too fast — while staying a single comfortable scroll passage.
+     * Pinned scroll distance. Kept to a single comfortable scroll passage
+     * rather than a multi-screen scroll-trap — this is a continuous
+     * walkthrough meant to be scrubbed through, not savored frame by frame.
      */
-    scrollDistanceVh: 15500,
+    scrollDistanceVh: 11000,
   },
 } as const;
-
-export function getVillaJourneyFrameSrc(frameIndex: number): string {
-  const frameNumber = String(frameIndex + 1).padStart(
-    VILLA_JOURNEY_SEQUENCE.frameNumberPadding,
-    "0"
-  );
-  return `${VILLA_JOURNEY_SEQUENCE.basePath}/frame-${frameNumber}.${VILLA_JOURNEY_SEQUENCE.frameExtension}`;
-}
-
-/**
- * Tried in order until one loads. The real poster doesn't exist yet, so this falls
- * through to the real first frame, which does — no unrelated legacy image is used
- * here, since frame 0 is already the strongest available fallback.
- */
-export const VILLA_JOURNEY_POSTER_SOURCES: readonly string[] = [
-  VILLA_JOURNEY_SEQUENCE.posterSrc,
-  getVillaJourneyFrameSrc(0),
-];
 
 export type TextBeatAlign = "left" | "center" | "right";
 
 /**
- * A frame-synchronized story beat. startFrame/endFrame are indices into the 653-frame
- * sequence (0-based), inclusive — `null` until the real range is known. A beat with
- * either value still `null` is treated as unassigned: it is filtered out of
- * VILLA_JOURNEY_ASSIGNED_TEXT_BEATS below and never rendered or animated, so nothing
- * displays at an arbitrary/guessed time.
+ * A story beat timed against the virtual frame count above. `null` until a
+ * frame range is assigned — see isAssignedTextBeat below.
  */
 export interface VillaJourneyTextBeat {
   startFrame: number | null;
@@ -69,14 +47,7 @@ function isAssignedTextBeat(beat: VillaJourneyTextBeat): beat is AssignedVillaJo
   return beat.startFrame !== null && beat.endFrame !== null;
 }
 
-/**
- * Scene titles for the villa journey, in on-screen order. Frame ranges are
- * intentionally left `null` — they have not been decided yet, and must not be
- * guessed. Fill in each beat's `startFrame`/`endFrame` (0-based indices into the
- * 653-frame sequence) once the scene boundaries in the source video are known;
- * VillaJourneyExperience.tsx picks up any beat with both values set automatically
- * via VILLA_JOURNEY_ASSIGNED_TEXT_BEATS below — no component changes needed.
- */
+/** Scene titles for the villa journey, in on-screen order. */
 export const VILLA_JOURNEY_TEXT_BEATS: VillaJourneyTextBeat[] = [
   { eyebrow: "01 — FOYER", heading: "Let's Enter", startFrame: 20, endFrame: 55 },
   { eyebrow: "02 — LIVING ROOM", heading: "A Life Beautifully Lived", startFrame: 75, endFrame: 130 },
@@ -91,9 +62,8 @@ export const VILLA_JOURNEY_TEXT_BEATS: VillaJourneyTextBeat[] = [
 ];
 
 /**
- * The subset of VILLA_JOURNEY_TEXT_BEATS that actually has a frame range assigned.
- * This is what VillaJourneyExperience.tsx renders and animates — computed once here
- * so an unfilled beat is simply absent, never displayed at an arbitrary time.
+ * The subset of VILLA_JOURNEY_TEXT_BEATS that actually has a frame range
+ * assigned — computed once so an unfilled beat is simply absent.
  */
 export const VILLA_JOURNEY_ASSIGNED_TEXT_BEATS: AssignedVillaJourneyTextBeat[] =
   VILLA_JOURNEY_TEXT_BEATS.filter(isAssignedTextBeat);

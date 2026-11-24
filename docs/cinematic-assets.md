@@ -1,103 +1,81 @@
-# Cinematic Frame Sequences — Asset Contract
+# Villa Journey Hero — Asset Contract
 
-The homepage opens with two scroll-scrubbed frame sequences, each rendered to a
-single `<canvas>` via the shared `useFrameSequence` hook
-(`src/components/cinematic/useFrameSequence.ts`):
+The homepage opens with a single scroll-scrubbed hero video: a continuous
+walkthrough of the villa, played via `src/components/sections/VillaJourneyExperience.tsx`,
+configured in `src/lib/cinematic/villa-journey-sequence.ts`.
 
-1. **Arrival** — `src/components/sections/CinematicExperience.tsx`,
-   config in `src/lib/cinematic/arrival-sequence.ts`.
-2. **Villa Journey** — `src/components/sections/VillaJourneyExperience.tsx`,
-   config in `src/lib/cinematic/villa-journey-sequence.ts`.
-
-Both follow the same contract below. Update the relevant config file if any of
-these numbers change — the loader does not infer frame count from disk.
+Scrolling sets `video.currentTime` directly (via GSAP ScrollTrigger) —
+there's no frame-by-frame image sequence, canvas, or per-frame network
+request. This replaced an earlier 653-image canvas frame-sequence (and a
+separate 48-frame "Arrival" scene) that cost ~700 CDN requests and ~22MB per
+page load and was materially heavier to decode on low-power mobile devices
+than a single hardware-decoded video.
 
 ## Expected files
 
 ```
-public/images/cinematic/arrival/
-  frame-0001.webp … frame-0048.webp
-public/images/cinematic/arrival-poster.jpg
-
-public/images/cinematic/villa-journey/
-  frame-0001.webp … frame-0653.webp
-public/images/cinematic/villa-journey-poster.jpg
+public/videos/villa-journey.mp4
+public/images/cinematic/villa-journey-poster.png
 ```
 
-- **Frame counts:** Arrival 48 (4s @ 12fps), Villa Journey 653 (55s @ 12fps).
-- **Numbering:** 4-digit, zero-padded, starting at `0001` (not `0000`).
-- **Format:** WebP for frames. JPEG for posters, since they load before
-  anything else and should decode as fast as possible.
-- **Dimensions:** both existing sequences are 1280×720. The canvas renderer
-  crops to "cover" at render time, so keep a consistent aspect ratio within
-  each sequence — don't mix portrait/landscape frames.
-- **Posters:** should visually match each sequence's frame `0001` so there's
-  no visible jump when the first real frame replaces it.
+- **Poster:** should visually match the video's first frame — shown
+  immediately via the `<video poster>` attribute before playback data
+  arrives, and used as-is under `prefers-reduced-motion` or on detected
+  low-power devices (no video loaded at all in that case: `preload="none"`).
 
-## Extracting frames with FFmpeg (Windows)
+## Re-encoding the source video (FFmpeg, Windows)
+
+Keep the source master (e.g. `villa-journey.mp4` at the repo root, untracked
+by the app) and re-encode from it whenever the clip changes:
 
 ```powershell
-# From the project root, with ffmpeg on PATH:
-New-Item -ItemType Directory -Force public\images\cinematic\<scene>
-
-ffmpeg -i <scene>-source.mp4 `
+ffmpeg -i villa-journey.mp4 `
   -vf "scale=1280:720:force_original_aspect_ratio=increase,crop=1280:720" `
-  -r 12 `
-  -q:v 80 `
-  public\images\cinematic\<scene>\frame-%04d.webp
+  -an -c:v libx264 -preset slow -crf 26 -g 12 -keyint_min 12 -sc_threshold 0 `
+  -pix_fmt yuv420p -movflags +faststart `
+  public\videos\villa-journey.mp4
+
+ffmpeg -ss 0 -i public\videos\villa-journey.mp4 -frames:v 1 -q:v 80 `
+  public\images\cinematic\villa-journey-poster.png
 ```
 
 Notes:
-- `-r 12` extracts at 12fps; let the source video's duration determine the
-  total frame count rather than capping with `-frames:v` and guessing.
-- `scale=...,crop=...` enforces a fixed export frame regardless of the
-  source video's resolution.
-- `-q:v 80` is a reasonable WebP quality/size trade-off; inspect file sizes
-  and adjust (Arrival and Villa Journey both average well under 50KB/frame).
-- Generate the poster separately from frame 1, e.g.:
-  ```powershell
-  ffmpeg -i public\images\cinematic\<scene>\frame-0001.webp public\images\cinematic\<scene>-poster.jpg
-  ```
 
-## Validation checklist before wiring a new/changed sequence in for real
+- `-an` strips audio — the hero is silent and muted regardless, no reason to
+  ship the audio track's bytes.
+- `-g 12 -keyint_min 12 -sc_threshold 0` forces a keyframe roughly every
+  ~0.5s so scrubbing (seeking) stays responsive — a long GOP is fine for
+  linear playback but makes arbitrary seeks (what scroll-scrubbing does
+  constantly) decode-heavy.
+- `-crf 26 -preset slow` is a reasonable quality/size trade-off; raise CRF
+  (less quality, smaller) if the file is still too large for comfortable
+  mobile delivery.
+- `-movflags +faststart` moves the moov atom to the front so playback can
+  start before the whole file downloads.
 
-- [ ] File count matches the config's `frameCount` exactly, named
-      `frame-0001.webp` … `frame-NNNN.webp`, no gaps.
-- [ ] All frames share the same dimensions and aspect ratio.
-- [ ] `<scene>-poster.jpg` exists and visually matches `frame-0001.webp`.
-- [ ] Total folder size is reasonable for a progressively-loaded sequence
-      (spot-check a few frame file sizes; flag before committing if any
-      single frame is unexpectedly large).
-- [ ] Open the homepage with the Network tab open and confirm frames load
-      progressively (not all at once) as you scroll, and that Villa Journey's
-      frames don't start downloading while Arrival is still playing.
-- [ ] Scroll slowly, quickly, and in reverse through each sequence — the
-      canvas should never show a blank or broken frame, and should settle on
-      the correct frame when scrolling stops.
+## Text beats
 
-## Current temporary fallbacks
+`src/lib/cinematic/villa-journey-sequence.ts` exports `VILLA_JOURNEY_TEXT_BEATS`:
+`{ startFrame, endFrame, eyebrow?, heading?, supportingText?, align? }`
+objects. `startFrame`/`endFrame` are **not** tied to the video file's real
+fps — they're indices into a virtual 653-"frame" timeline (12fps-equivalent)
+used only to compute a 0..1 scroll-progress fraction
+(`frame / (frameCount - 1)`). Adjust `frameCount` only if you deliberately
+want to re-time every beat at once; otherwise just adjust individual
+`startFrame`/`endFrame` values directly.
 
-Neither `arrival-poster.jpg` nor `villa-journey-poster.jpg` exists yet.
-`useFrameSequence` is given an ordered list of sources per scene
-(`ARRIVAL_POSTER_SOURCES` / `VILLA_JOURNEY_POSTER_SOURCES`) and falls through
-to the next one on failure:
+A beat with either value still `null` is filtered out of
+`VILLA_JOURNEY_ASSIGNED_TEXT_BEATS` and never rendered — nothing displays at
+an unassigned/guessed time.
 
-- **Arrival:** poster → real `frame-0001.webp` (exists) → legacy
-  `public/images/cinematic/scene-01.png` (an unrelated still from an earlier
-  version of this page, kept only as a last-resort safety net).
-- **Villa Journey:** poster → real `frame-0001.webp` (exists). No legacy
-  fallback is used here, since frame 0001 is already a real, correct frame.
+## Low-power / reduced-motion fallback
 
-Once each `<scene>-poster.jpg` is generated, it will be picked up
-automatically — no code changes needed, since it's already first in each
-fallback list.
+`VillaJourneyExperience.tsx` skips the pin, the scroll-scrub, and loading the
+video entirely (`preload="none"`) when either is true:
 
-## Future story-beat text (Villa Journey)
+- `prefers-reduced-motion: reduce`
+- A heuristic "low-power device" check: `navigator.deviceMemory <= 4`,
+  `connection.saveData`, or `connection.effectiveType` is `2g`/`3g`.
 
-`src/lib/cinematic/villa-journey-sequence.ts` exports `VILLA_JOURNEY_TEXT_BEATS`,
-an array of `{ startFrame, endFrame, eyebrow?, heading?, supportingText?, align? }`
-objects. It is intentionally empty — wording and frame ranges haven't been
-decided. `VillaJourneyExperience.tsx` already renders and animates whatever is
-in that array (fade in at `startFrame`, fade out at `endFrame`, reversible on
-scroll-up); adding a beat there is enough to make it appear on screen, with no
-changes needed to the sequence engine or scroll/canvas logic.
+In that case only the poster image and the first beat's text are shown,
+statically, with no per-scroll-frame work at all.

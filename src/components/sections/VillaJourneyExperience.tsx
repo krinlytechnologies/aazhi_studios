@@ -3,12 +3,9 @@
 import { useEffect, useRef, useState } from "react";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
-import { useFrameSequence } from "@/components/cinematic/useFrameSequence";
 import {
   VILLA_JOURNEY_SEQUENCE,
-  VILLA_JOURNEY_POSTER_SOURCES,
   VILLA_JOURNEY_ASSIGNED_TEXT_BEATS,
-  getVillaJourneyFrameSrc,
   type TextBeatAlign,
 } from "@/lib/cinematic/villa-journey-sequence";
 
@@ -24,66 +21,77 @@ function alignClassName(align: TextBeatAlign | undefined): string {
 }
 
 /**
- * The "Villa Journey" scene: a continuous 653-frame walkthrough that follows Arrival,
- * using the same canvas frame-sequence engine (useFrameSequence). Structurally mirrors
- * CinematicExperience.tsx (Arrival) — see that file's comments for the shared pattern;
- * differences here are: a much longer sequence, lazy-started streaming (so Arrival
- * isn't competing for bandwidth), and a frame-synchronized text-beat list whose
- * titles are set but whose frame ranges are still unassigned — see
- * docs/cinematic-assets.md and villa-journey-sequence.ts.
+ * Returns true on devices unlikely to handle a pinned, scroll-scrubbed video
+ * smoothly — low memory or a constrained/data-saver connection. These fall
+ * back to the static poster with no pin and no per-scroll-frame work, same
+ * as prefers-reduced-motion, rather than fighting for a "premium" effect
+ * the hardware can't deliver smoothly anyway.
+ */
+/**
+ * How long to hold on the poster frame after mount before scroll starts
+ * driving the video/text, even if the visitor scrolls immediately — gives
+ * the video a moment to buffer so it doesn't stutter the instant scrubbing
+ * begins.
+ */
+const INTRO_HOLD_MS = 1300;
+
+function isLowPowerDevice(): boolean {
+  const nav = navigator as Navigator & {
+    deviceMemory?: number;
+    connection?: { saveData?: boolean; effectiveType?: string };
+  };
+  if (typeof nav.deviceMemory === "number" && nav.deviceMemory <= 4) return true;
+  const connection = nav.connection;
+  if (connection?.saveData) return true;
+  if (connection?.effectiveType && /2g|3g/.test(connection.effectiveType)) return true;
+  return false;
+}
+
+/**
+ * The homepage's opening hero: a single continuous villa walkthrough video,
+ * scroll-scrubbed via GSAP ScrollTrigger (sets `video.currentTime` directly —
+ * hardware-decoded, one file, no per-frame image requests) with a
+ * frame-synchronized text-beat list fading in over it.
  */
 export default function VillaJourneyExperience() {
   const sectionRef = useRef<HTMLDivElement | null>(null);
-  const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const videoRef = useRef<HTMLVideoElement | null>(null);
   const bridgeRef = useRef<HTMLDivElement | null>(null);
   const beatRefs = useRef<(HTMLDivElement | null)[]>([]);
 
-  const [reducedMotion, setReducedMotion] = useState(false);
-  // Only start streaming the 653-frame sequence once the visitor is actually
-  // approaching this scene — not the moment the page loads while Arrival plays.
-  const [nearViewport, setNearViewport] = useState(false);
+  const [staticFallback, setStaticFallback] = useState(false);
+  const [videoReady, setVideoReady] = useState(false);
+  const [videoFailed, setVideoFailed] = useState(false);
 
   useEffect(() => {
     const query = window.matchMedia("(prefers-reduced-motion: reduce)");
-    const update = () => setReducedMotion(query.matches);
+    const update = () => setStaticFallback(query.matches || isLowPowerDevice());
     update();
     query.addEventListener("change", update);
     return () => query.removeEventListener("change", update);
   }, []);
 
   useEffect(() => {
-    const section = sectionRef.current;
-    if (!section) return;
+    const video = videoRef.current;
+    if (!video || staticFallback) return;
 
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry?.isIntersecting) {
-          setNearViewport(true);
-          observer.disconnect();
-        }
-      },
-      { rootMargin: "50% 0px" }
-    );
-    observer.observe(section);
-    return () => observer.disconnect();
-  }, []);
-
-  const { status, setProgress, firstFrameReady } = useFrameSequence({
-    canvasRef,
-    frameCount: VILLA_JOURNEY_SEQUENCE.frameCount,
-    getFrameSrc: getVillaJourneyFrameSrc,
-    posterSources: VILLA_JOURNEY_POSTER_SOURCES,
-    // A static representative frame is enough under reduced motion — no need to stream 653.
-    streamFrames: nearViewport && !reducedMotion,
-    debugLabel: "VillaJourney",
-  });
+    const onCanPlay = () => setVideoReady(true);
+    const onError = () => setVideoFailed(true);
+    video.addEventListener("canplay", onCanPlay);
+    video.addEventListener("error", onError);
+    return () => {
+      video.removeEventListener("canplay", onCanPlay);
+      video.removeEventListener("error", onError);
+    };
+  }, [staticFallback]);
 
   useEffect(() => {
     gsap.registerPlugin(ScrollTrigger);
 
     const section = sectionRef.current;
+    const video = videoRef.current;
     const bridge = bridgeRef.current;
-    if (!section || !bridge) return;
+    if (!section || !video || !bridge) return;
 
     const beats = VILLA_JOURNEY_ASSIGNED_TEXT_BEATS.map((_, i) => beatRefs.current[i]).filter(
       (el): el is HTMLDivElement => Boolean(el)
@@ -95,26 +103,29 @@ export default function VillaJourneyExperience() {
     mm.add(
       {
         // "all" always matches, so gsap.matchMedia's callback fires immediately on
-        // registration no matter which breakpoint the device starts at. Without it,
-        // GSAP only invokes the callback once some listed query is *currently* true —
-        // on a phone that's never >=768px wide, `desktop` and `reduced` both start
-        // (and stay) false, so the callback — and therefore every ScrollTrigger this
-        // scene depends on — would never run at all. See MatchMedia.add in gsap-core.
+        // registration no matter which breakpoint the device starts at.
         all: "all",
-        reduced: "(prefers-reduced-motion: reduce)",
         desktop: "(min-width: 768px)",
       },
       (context) => {
-        const { reduced, desktop } = context.conditions as { reduced: boolean; desktop: boolean };
+        const { desktop } = context.conditions as { desktop: boolean };
+        const header = document.getElementById("site-header");
 
         gsap.set(bridge, { opacity: 0 });
-        gsap.set(beats, { opacity: 1, y: 0 });
 
-        if (reduced) {
-          // Stable representative frame, no scroll-scrubbed movement.
-          setProgress(0);
+        if (staticFallback) {
+          // No scroll-scrubbed hero to hide it behind, so keep the header visible
+          // and usable throughout — the hide/reveal dance below is skipped entirely.
+          if (header) gsap.set(header, { opacity: 1, pointerEvents: "auto" });
+
+          // Stable poster frame, no scroll-scrubbed video. Only the first beat is
+          // shown — the rest stay hidden rather than overlapping at the same spot.
+          gsap.set(beats, { opacity: 0, y: 0 });
+          if (beats[0]) gsap.set(beats[0], { opacity: 1 });
           return;
         }
+
+        if (header) gsap.set(header, { opacity: 0, pointerEvents: "none" });
 
         gsap.set(beats, { opacity: 0, y: 14 });
 
@@ -132,10 +143,27 @@ export default function VillaJourneyExperience() {
 
         // Bridge into the next homepage section, fading in over the final stretch.
         textTl.to(bridge, { opacity: 1, duration: 0.08, ease: "power1.in" }, 0.94);
+        // Reveal the header just ahead of the bridge so it's fully visible by the
+        // time the journey hands off to the next section.
+        if (header) {
+          textTl.set(header, { pointerEvents: "auto" }, 0.92);
+          textTl.to(header, { opacity: 1, duration: 0.08, ease: "power1.in" }, 0.92);
+        }
         textTl.progress(0);
 
+        const seekVideo = (progress: number) => {
+          const duration = video.duration;
+          if (!duration || Number.isNaN(duration)) return;
+          video.currentTime = Math.min(duration, Math.max(0, progress * duration));
+        };
+
+        // Held true until INTRO_HOLD_MS has passed since mount — see
+        // INTRO_HOLD_MS's comment above.
+        let introHoldElapsed = false;
+
         const onUpdate = (self: ScrollTrigger) => {
-          setProgress(self.progress);
+          if (!introHoldElapsed) return;
+          seekVideo(self.progress);
           textTl.progress(self.progress);
         };
 
@@ -145,33 +173,48 @@ export default function VillaJourneyExperience() {
               start: "top top",
               end: `+=${VILLA_JOURNEY_SEQUENCE.desktop.scrollDistanceVh}vh`,
               pin: true,
-              scrub: 1,
+              // A light scrub smooths out jittery wheel/touch input into a
+              // buttery seek curve without feeling laggy or disconnected
+              // from the scrollbar.
+              scrub: 0.3,
               invalidateOnRefresh: true,
               onUpdate,
               onRefresh: onUpdate,
             })
           : ScrollTrigger.create({
+              // Not pinned: the scrub plays out over exactly the scroll distance the
+              // section is passing through the viewport, so it stays visible throughout.
               trigger: section,
               start: "top bottom",
               end: "bottom top",
-              scrub: 1,
+              scrub: 0.3,
               invalidateOnRefresh: true,
               onUpdate,
               onRefresh: onUpdate,
             });
 
+        const introHoldTimeout = window.setTimeout(() => {
+          introHoldElapsed = true;
+          // Snap to wherever the scroll actually is once the hold ends — the
+          // visitor may well have kept scrolling through the held poster.
+          onUpdate(st);
+        }, INTRO_HOLD_MS);
+
         return () => {
+          window.clearTimeout(introHoldTimeout);
           st.kill();
           textTl.kill();
+          // Never leave the header stuck hidden if this effect tears down mid-sequence.
+          if (header) gsap.set(header, { opacity: 1, pointerEvents: "auto" });
         };
       }
     );
 
     return () => mm.revert();
-  }, [setProgress]);
+  }, [staticFallback]);
 
-  const showLoadingHint = nearViewport && !firstFrameReady && status !== "missing" && !reducedMotion;
-  const showDevNotice = process.env.NODE_ENV !== "production" && status === "missing";
+  const showLoadingHint = !staticFallback && !videoReady && !videoFailed;
+  const showDevNotice = process.env.NODE_ENV !== "production" && videoFailed;
 
   return (
     <section
@@ -179,17 +222,16 @@ export default function VillaJourneyExperience() {
       id="villa-journey-experience"
       className="relative h-screen w-full overflow-hidden bg-charcoal text-ivory"
     >
-      {/* Initial poster image: visible immediately on SSR & initial load before canvas paints */}
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img
-        src={VILLA_JOURNEY_SEQUENCE.posterSrc}
-        alt="Interior of the villa"
+      <video
+        ref={videoRef}
         className="absolute inset-0 h-full w-full object-cover"
+        src={VILLA_JOURNEY_SEQUENCE.videoSrc}
+        poster={VILLA_JOURNEY_SEQUENCE.posterSrc}
+        muted
+        playsInline
+        preload={staticFallback ? "none" : "auto"}
+        aria-label="A walkthrough of the villa's interior."
       />
-
-      <canvas ref={canvasRef} aria-hidden="true" className="absolute inset-0 h-full w-full">
-        Interior of the villa.
-      </canvas>
 
       <div className="absolute inset-0 bg-gradient-to-t from-charcoal/70 via-charcoal/5 to-transparent" />
 
@@ -221,7 +263,7 @@ export default function VillaJourneyExperience() {
 
       {showDevNotice && (
         <div className="pointer-events-none absolute left-4 top-4 z-30 max-w-xs rounded border border-ivory/30 bg-charcoal/90 px-3 py-2 text-xs text-ivory/80">
-          Dev only: villa journey frame sequence not found — showing a fallback image instead.
+          Dev only: villa journey video failed to load — showing the poster instead.
         </div>
       )}
     </section>
