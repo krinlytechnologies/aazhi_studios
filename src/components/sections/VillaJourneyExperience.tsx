@@ -167,31 +167,26 @@ export default function VillaJourneyExperience() {
           textTl.progress(self.progress);
         };
 
-        const st = desktop
-          ? ScrollTrigger.create({
-              trigger: section,
-              start: "top top",
-              end: `+=${VILLA_JOURNEY_SEQUENCE.desktop.scrollDistanceVh}vh`,
-              pin: true,
-              // A light scrub smooths out jittery wheel/touch input into a
-              // buttery seek curve without feeling laggy or disconnected
-              // from the scrollbar.
-              scrub: 0.3,
-              invalidateOnRefresh: true,
-              onUpdate,
-              onRefresh: onUpdate,
-            })
-          : ScrollTrigger.create({
-              // Not pinned: the scrub plays out over exactly the scroll distance the
-              // section is passing through the viewport, so it stays visible throughout.
-              trigger: section,
-              start: "top bottom",
-              end: "bottom top",
-              scrub: 0.3,
-              invalidateOnRefresh: true,
-              onUpdate,
-              onRefresh: onUpdate,
-            });
+        // Pinned on both breakpoints — without this, the section (and the whole
+        // page under it) just scrolls past normally instead of holding still
+        // while the video scrubs. Only the pinned distance differs per device.
+        const scrollDistanceVh = desktop
+          ? VILLA_JOURNEY_SEQUENCE.desktop.scrollDistanceVh
+          : VILLA_JOURNEY_SEQUENCE.mobile.scrollDistanceVh;
+
+        const st = ScrollTrigger.create({
+          trigger: section,
+          start: "top top",
+          end: `+=${scrollDistanceVh}vh`,
+          pin: true,
+          // A light scrub smooths out jittery wheel/touch input into a
+          // buttery seek curve without feeling laggy or disconnected
+          // from the scrollbar.
+          scrub: 0.3,
+          invalidateOnRefresh: true,
+          onUpdate,
+          onRefresh: onUpdate,
+        });
 
         const introHoldTimeout = window.setTimeout(() => {
           introHoldElapsed = true;

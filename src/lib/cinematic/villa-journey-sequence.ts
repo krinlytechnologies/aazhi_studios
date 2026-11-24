@@ -21,6 +21,17 @@ export const VILLA_JOURNEY_SEQUENCE = {
      */
     scrollDistanceVh: 11000,
   },
+  mobile: {
+    /**
+     * Pinned scroll distance on touch devices. Deliberately much shorter than
+     * desktop's: without a pin here the section would scroll past like any
+     * other block (the whole page sliding underneath it) instead of holding
+     * still while the video scrubs — but a phone-length flick-scroll session
+     * also shouldn't take as long per screen-height as a desktop wheel-scroll
+     * does, so this isn't a 1:1 scaling of the desktop number.
+     */
+    scrollDistanceVh: 3500,
+  },
 } as const;
 
 export type TextBeatAlign = "left" | "center" | "right";
