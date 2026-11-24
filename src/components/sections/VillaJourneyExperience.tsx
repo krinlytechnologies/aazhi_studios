@@ -87,6 +87,10 @@ export default function VillaJourneyExperience() {
 
   useEffect(() => {
     gsap.registerPlugin(ScrollTrigger);
+    // Mobile browsers fire `resize` as the URL bar hides/shows mid-scroll;
+    // without this, every one of those triggers a pin recalculation —
+    // the classic cause of a pinned section jittering/snapping on phones.
+    ScrollTrigger.config({ ignoreMobileResize: true });
 
     const section = sectionRef.current;
     const video = videoRef.current;
@@ -151,11 +155,42 @@ export default function VillaJourneyExperience() {
         }
         textTl.progress(0);
 
-        const seekVideo = (progress: number) => {
+        const applySeek = (progress: number) => {
           const duration = video.duration;
           if (!duration || Number.isNaN(duration)) return;
           video.currentTime = Math.min(duration, Math.max(0, progress * duration));
         };
+
+        // The progress we most recently want applied, regardless of whether
+        // we actually managed to apply it yet (see seekVideo below).
+        let latestProgress = 0;
+
+        const seekVideo = (progress: number) => {
+          latestProgress = progress;
+          // Skip while a previous seek is still in flight. Mobile decoders are
+          // far slower to complete a seek than desktop GPUs; writing
+          // currentTime again before the last one finishes queues up seeks
+          // faster than they can be serviced, which is what produces visible
+          // stutter/frozen frames on phones. Dropping the intermediate
+          // targets and always chasing the latest one once free reads as a
+          // smooth (if slightly simplified) scrub instead.
+          if (video.seeking) return;
+          applySeek(progress);
+        };
+
+        // Once an in-flight seek finishes, make sure the video actually lands
+        // on the most recent target — otherwise, if scrolling stops exactly
+        // while a seek is pending, the final frame shown could be stale
+        // (whatever the dropped intermediate seeks landed on) instead of
+        // matching the final scroll position.
+        const onSeeked = () => {
+          const duration = video.duration;
+          if (!duration || Number.isNaN(duration)) return;
+          if (Math.abs(video.currentTime / duration - latestProgress) > 0.002) {
+            applySeek(latestProgress);
+          }
+        };
+        video.addEventListener("seeked", onSeeked);
 
         // Held true until INTRO_HOLD_MS has passed since mount — see
         // INTRO_HOLD_MS's comment above.
@@ -197,6 +232,7 @@ export default function VillaJourneyExperience() {
 
         return () => {
           window.clearTimeout(introHoldTimeout);
+          video.removeEventListener("seeked", onSeeked);
           st.kill();
           textTl.kill();
           // Never leave the header stuck hidden if this effect tears down mid-sequence.
