@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useRef } from "react";
+import { useRevealOnScroll } from "@/lib/useRevealOnScroll";
 
 interface GalleryImage {
   folder: string;
@@ -9,12 +10,15 @@ interface GalleryImage {
 
 interface GalleryCategory {
   label: string;
+  description: string;
   images: GalleryImage[];
 }
 
 const GALLERY: GalleryCategory[] = [
   {
     label: "Living",
+    description:
+      "The room that has to do the most — gather, host, and unwind — so layout and light come first, finish and furniture second.",
     images: [
       { folder: "LIVING", file: "liv-1.webp" },
       { folder: "LIVING", file: "liv-2.webp" },
@@ -24,6 +28,8 @@ const GALLERY: GalleryCategory[] = [
   },
   {
     label: "Kitchen",
+    description:
+      "Built around how you actually cook: storage where your hands reach first, worktops that keep pace with real use.",
     images: [
       { folder: "KITCHEN", file: "kit-1.webp" },
       { folder: "KITCHEN", file: "kit-2.webp" },
@@ -32,6 +38,8 @@ const GALLERY: GalleryCategory[] = [
   },
   {
     label: "Bedroom",
+    description:
+      "A quieter palette and softer light — the one space designed purely to help you switch off.",
     images: [
       { folder: "BEDROOM", file: "Bed-1.webp" },
       { folder: "BEDROOM", file: "Bed-2.webp" },
@@ -40,6 +48,8 @@ const GALLERY: GalleryCategory[] = [
   },
   {
     label: "Kid's Room",
+    description:
+      "Playful without being precious — durable materials and storage that grows with the child, not just the trend.",
     images: [
       { folder: "KID ROOM", file: "kid-1.webp" },
       { folder: "KID ROOM", file: "kid-2.webp" },
@@ -49,6 +59,8 @@ const GALLERY: GalleryCategory[] = [
   },
   {
     label: "Bathroom",
+    description:
+      "Small footprint, high stakes — every fixture and finish chosen for a space that has to feel calm every single day.",
     images: [
       { folder: "BATHROOM", file: "bath-1.webp" },
       { folder: "BATHROOM", file: "bath-2.webp" },
@@ -58,6 +70,8 @@ const GALLERY: GalleryCategory[] = [
   },
   {
     label: "Cafes",
+    description:
+      "Commercial spaces that still feel designed for people — seating, acoustics, and atmosphere tuned for long stays.",
     images: [
       { folder: "cafe", file: "Modern Industrial Café Interior.png" },
       { folder: "cafe", file: "Symmetrical Café Lounge at Dusk.png" },
@@ -74,94 +88,103 @@ function imageSrc({ folder, file }: GalleryImage): string {
 }
 
 /**
- * A horizontally-scrolling, uniform-size "cover flow": whichever card sits
- * nearest the track's center scales up and comes forward (translateZ under a
- * perspective), while cards further toward the edges shrink back and dim.
- * Driven by the track's own horizontal `scroll` event, not page scroll, so it
- * needs no ScrollTrigger/matchMedia and works identically with mouse drag,
- * trackpad, or touch swipe.
+ * An editorial asymmetric block: a large hero image, a text column (index,
+ * title, a line describing what that room is designed around), and a mosaic
+ * of the category's remaining shots — alternating sides category to category
+ * so the section reads as a sequence of hand-laid-out spreads rather than a
+ * repeating grid.
+ *
+ * The text column is vertically centered against the hero image (`md:self-center`
+ * on an otherwise-stretched grid row) instead of split to the row's top/bottom
+ * edges, and the mosaic is stretched (`md:h-full`) with its row count computed
+ * from the image count so its total height always matches the hero — the two
+ * read as one composed spread rather than two unrelated floating blocks.
+ *
+ * Every image gets a one-shot fade/rise as it scrolls into view
+ * (see useRevealOnScroll) instead of the old scroll-scrubbed 3D carousel, so
+ * there's no per-frame work at any screen size.
  */
-function CategoryCarousel({ label, images }: GalleryCategory) {
-  const trackRef = useRef<HTMLDivElement | null>(null);
-  const itemRefs = useRef<(HTMLDivElement | null)[]>([]);
+function CategoryBlock({ label, description, images, index }: GalleryCategory & { index: number }) {
+  const [hero, ...rest] = images;
+  const reversed = index % 2 === 1;
+  const accent = index === Math.floor(GALLERY.length / 2);
+  const mosaicRows = Math.ceil(rest.length / 2);
 
-  useEffect(() => {
-    const track = trackRef.current;
-    if (!track) return;
+  const heroRef = useRef<(HTMLDivElement | null)[]>([]);
+  const mosaicRefs = useRef<(HTMLDivElement | null)[]>([]);
 
-    let rafId: number | null = null;
-
-    const update = () => {
-      rafId = null;
-      const trackRect = track.getBoundingClientRect();
-      const centerX = trackRect.left + trackRect.width / 2;
-      const half = trackRect.width / 2 || 1;
-
-      for (const item of itemRefs.current) {
-        if (!item) continue;
-        const rect = item.getBoundingClientRect();
-        const itemCenter = rect.left + rect.width / 2;
-        const signed = Math.max(-1, Math.min(1, (itemCenter - centerX) / half));
-        const normalized = Math.abs(signed);
-
-        // Stronger depth swing: the centered card scales up and pops forward;
-        // off-center cards shrink back, tilt away in 3D, and recede.
-        const scale = 1.22 - normalized * 0.45;
-        const translateZ = (1 - normalized) * 180;
-        const rotateY = -signed * 28;
-        const opacity = 1 - normalized * 0.55;
-
-        item.style.transform = `translateZ(${translateZ}px) rotateY(${rotateY}deg) scale(${scale})`;
-        item.style.opacity = String(opacity);
-        item.style.zIndex = String(Math.round((1 - normalized) * 100));
-      }
-    };
-
-    const onScroll = () => {
-      if (rafId !== null) return;
-      rafId = requestAnimationFrame(update);
-    };
-
-    update();
-    track.addEventListener("scroll", onScroll, { passive: true });
-    window.addEventListener("resize", onScroll);
-    return () => {
-      track.removeEventListener("scroll", onScroll);
-      window.removeEventListener("resize", onScroll);
-      if (rafId !== null) cancelAnimationFrame(rafId);
-    };
-  }, [images.length]);
+  useRevealOnScroll(heroRef, [], { translateY: 32, threshold: 0.15 });
+  useRevealOnScroll(mosaicRefs, [], { translateY: 20, threshold: 0.2, stagger: 90 });
 
   return (
-    <div>
-      <div className="container-editorial border-b border-ivory/15 pb-4">
-        <h3 className="heading-display text-3xl sm:text-4xl">{label}</h3>
-      </div>
+    <div
+      className={`border-t pb-16 pt-16 first:border-t-0 first:pt-0 last:pb-0 ${
+        accent ? "border-ivory/20 bg-brown py-16 text-ivory" : "border-ivory/10"
+      }`}
+    >
+      <div className="container-editorial">
+        <div className="grid gap-10 md:grid-cols-12 md:gap-10">
+          <div
+            className={`flex flex-col gap-4 border-ivory/20 md:col-span-3 md:self-center md:border-l md:pl-6 ${
+              reversed ? "md:order-2 md:border-l-0 md:border-r md:pl-0 md:pr-6" : ""
+            }`}
+          >
+            <p className={`eyebrow ${accent ? "text-ivory/60" : "text-ivory/50"}`}>
+              {String(index + 1).padStart(2, "0")} — {label}
+            </p>
+            <h3 className="heading-display text-3xl sm:text-4xl">{label}</h3>
+            <p className={`max-w-sm text-base leading-relaxed ${accent ? "text-ivory/75" : "text-ivory/70"}`}>
+              {description}
+            </p>
+          </div>
 
-      <div
-        ref={trackRef}
-        className="mt-10 flex snap-x snap-mandatory gap-10 overflow-x-auto px-[18vw] pb-12 [perspective:1800px] [scrollbar-width:thin] sm:gap-14 sm:px-[26vw]"
-      >
-        {images.map((image, i) => {
-          const src = imageSrc(image);
-          return (
-            <div
-              key={src}
-              ref={(el) => {
-                itemRefs.current[i] = el;
-              }}
-              className="relative aspect-[4/3] w-[320px] flex-shrink-0 snap-center overflow-hidden rounded-sm shadow-2xl transition-[transform,opacity] duration-200 ease-out sm:w-[460px] lg:w-[560px]"
-            >
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={src}
-                alt={`${label} interior concept render`}
-                loading={i === 0 ? "eager" : "lazy"}
-                className="h-full w-full object-cover"
-              />
-            </div>
-          );
-        })}
+          <div
+            ref={(el) => {
+              heroRef.current[0] = el;
+            }}
+            className={`relative aspect-[4/3] overflow-hidden rounded-sm md:col-span-6 ${
+              reversed ? "md:order-1" : ""
+            }`}
+          >
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={imageSrc(hero)}
+              alt={`${label} interior concept render`}
+              loading={index === 0 ? "eager" : "lazy"}
+              className="h-full w-full object-cover"
+            />
+          </div>
+
+          <div
+            className={`grid aspect-[4/3] grid-cols-2 gap-4 md:col-span-3 md:aspect-auto md:h-full ${
+              reversed ? "md:order-3" : ""
+            }`}
+            style={{ gridTemplateRows: `repeat(${mosaicRows}, 1fr)` }}
+          >
+            {rest.map((image, i) => {
+              const src = imageSrc(image);
+              const isLast = i === rest.length - 1;
+              const spansFull = isLast && rest.length % 2 === 1;
+              return (
+                <div
+                  key={src}
+                  ref={(el) => {
+                    mosaicRefs.current[i] = el;
+                  }}
+                  className={`relative overflow-hidden rounded-sm ${spansFull ? "col-span-2" : ""}`}
+                >
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={src}
+                    alt={`${label} interior concept render`}
+                    loading="lazy"
+                    className="h-full w-full object-cover"
+                  />
+                </div>
+              );
+            })}
+          </div>
+        </div>
       </div>
     </div>
   );
@@ -182,14 +205,10 @@ export default function SpaceShapedByPurpose() {
         </p>
       </div>
 
-      <div className="mt-16 flex flex-col gap-20">
-        {GALLERY.map((category) => (
-          <CategoryCarousel key={category.label} {...category} />
+      <div className="mt-16 flex flex-col">
+        {GALLERY.map((category, index) => (
+          <CategoryBlock key={category.label} index={index} {...category} />
         ))}
-      </div>
-
-      <div className="container-editorial">
-        <p className="eyebrow mt-16 text-ivory/40"></p>
       </div>
     </section>
   );

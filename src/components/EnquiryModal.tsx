@@ -5,7 +5,7 @@ import { useEffect, useId, useState } from "react";
 // Studio's WhatsApp number (India). Enquiries are handed off via a WhatsApp
 // "click to chat" link — there is no backend here, so the visitor's browser
 // opens WhatsApp with the message pre-filled; they still tap Send themselves.
-const WHATSAPP_NUMBER = "919363433280";
+const WHATSAPP_NUMBER = "916381284831";
 
 interface EnquiryFormState {
   projectType: string;
@@ -81,7 +81,7 @@ export default function EnquiryModal({
 
       {isOpen && (
         <div
-          className="fixed inset-0 z-[100] flex items-center justify-center bg-charcoal/60 px-4 backdrop-blur-sm"
+          className="fixed inset-0 z-[100] flex items-center justify-center bg-charcoal/70 px-4 md:bg-charcoal/60 md:backdrop-blur-sm"
           role="presentation"
           onClick={() => setIsOpen(false)}
         >

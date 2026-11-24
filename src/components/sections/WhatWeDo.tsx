@@ -3,6 +3,7 @@
 import { useEffect, useRef } from "react";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { useRevealOnScroll } from "@/lib/useRevealOnScroll";
 
 interface Service {
   title: string;
@@ -43,6 +44,12 @@ const SERVICES: Service[] = [
 export default function WhatWeDo() {
   const sectionRef = useRef<HTMLDivElement | null>(null);
   const cardRefs = useRef<(HTMLDivElement | null)[]>([]);
+  const mobileCardRefs = useRef<(HTMLDivElement | null)[]>([]);
+
+  // Mobile's plain stacked list skips the pinned deck below, but a fully
+  // static list reads as dead. A one-shot fade/rise reveal keeps it feeling
+  // alive without the per-scroll-frame cost of the pinned desktop animation.
+  useRevealOnScroll(mobileCardRefs, [], { translateY: 28, threshold: 0.2 });
 
   useEffect(() => {
     gsap.registerPlugin(ScrollTrigger);
@@ -162,7 +169,12 @@ export default function WhatWeDo() {
         </div>
         <div className="container-editorial mt-12 flex flex-col gap-14">
           {SERVICES.map((service, i) => (
-            <div key={service.title}>
+            <div
+              key={service.title}
+              ref={(el) => {
+                mobileCardRefs.current[i] = el;
+              }}
+            >
               <p className="eyebrow text-brown/60">
                 {String(i + 1).padStart(2, "0")} — What We Do
               </p>
