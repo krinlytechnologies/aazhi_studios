@@ -88,26 +88,16 @@ function imageSrc({ folder, file }: GalleryImage): string {
 }
 
 /**
- * An editorial asymmetric block: a large hero image, a text column (index,
- * title, a line describing what that room is designed around), and a mosaic
- * of the category's remaining shots — alternating sides category to category
- * so the section reads as a sequence of hand-laid-out spreads rather than a
- * repeating grid.
- *
- * The text column is vertically centered against the hero image (`md:self-center`
- * on an otherwise-stretched grid row) instead of split to the row's top/bottom
- * edges, and the mosaic is stretched (`md:h-full`) with its row count computed
- * from the image count so its total height always matches the hero — the two
- * read as one composed spread rather than two unrelated floating blocks.
- *
- * Every image gets a one-shot fade/rise as it scrolls into view
- * (see useRevealOnScroll) instead of the old scroll-scrubbed 3D carousel, so
- * there's no per-frame work at any screen size.
+ * An editorial, magazine-spread treatment of one room category: a large hero
+ * image, an index/title/description column, a "Read the Story" affordance
+ * that drops the visitor into the enquiry flow for that kind of space, and a
+ * mosaic of the category's remaining shots. Alternates sides category to
+ * category so the journal reads as a sequence of hand-laid-out spreads
+ * rather than a repeating grid.
  */
 function CategoryBlock({ label, description, images, index }: GalleryCategory & { index: number }) {
   const [hero, ...rest] = images;
   const reversed = index % 2 === 1;
-  const accent = index === Math.floor(GALLERY.length / 2);
   const mosaicRows = Math.ceil(rest.length / 2);
 
   const heroRef = useRef<(HTMLDivElement | null)[]>([]);
@@ -117,32 +107,33 @@ function CategoryBlock({ label, description, images, index }: GalleryCategory & 
   useRevealOnScroll(mosaicRefs, [], { translateY: 20, threshold: 0.2, stagger: 90 });
 
   return (
-    <div
-      className={`border-t pb-16 pt-16 first:border-t-0 first:pt-0 last:pb-0 ${
-        accent ? "border-ivory/20 bg-brown py-16 text-ivory" : "border-ivory/10"
-      }`}
-    >
+    <div className="border-t border-brown/10 py-16 first:border-t-0 first:pt-0 last:pb-0 sm:py-20">
       <div className="container-editorial">
         <div className="grid gap-10 md:grid-cols-12 md:gap-10">
           <div
-            className={`flex flex-col gap-4 border-ivory/20 md:col-span-3 md:self-center md:border-l md:pl-6 ${
+            className={`flex flex-col gap-5 border-brown/15 md:col-span-3 md:self-center md:border-l md:pl-6 ${
               reversed ? "md:order-2 md:border-l-0 md:border-r md:pl-0 md:pr-6" : ""
             }`}
           >
-            <p className={`eyebrow ${accent ? "text-ivory/60" : "text-ivory/50"}`}>
-              {String(index + 1).padStart(2, "0")} — {label}
-            </p>
-            <h3 className="heading-display text-3xl sm:text-4xl">{label}</h3>
-            <p className={`max-w-sm text-base leading-relaxed ${accent ? "text-ivory/75" : "text-ivory/70"}`}>
-              {description}
-            </p>
+            <p className="eyebrow text-terracotta">Issue {String(index + 1).padStart(2, "0")}</p>
+            <h3 className="heading-display text-4xl text-brown sm:text-5xl">{label}</h3>
+            <p className="max-w-sm text-base leading-relaxed text-charcoal/70">{description}</p>
+            <a
+              href="#contact"
+              className="eyebrow group mt-2 inline-flex w-fit items-center gap-2 text-brown transition-colors hover:text-terracotta"
+            >
+              Read the Story
+              <span aria-hidden className="transition-transform group-hover:translate-x-1">
+                &rarr;
+              </span>
+            </a>
           </div>
 
           <div
             ref={(el) => {
               heroRef.current[0] = el;
             }}
-            className={`relative aspect-[4/3] overflow-hidden rounded-sm md:col-span-6 ${
+            className={`relative aspect-[4/3] overflow-hidden rounded-sm shadow-xl md:col-span-6 ${
               reversed ? "md:order-1" : ""
             }`}
           >
@@ -190,22 +181,21 @@ function CategoryBlock({ label, description, images, index }: GalleryCategory & 
   );
 }
 
-export default function SpaceShapedByPurpose() {
+export default function SpaceJournal() {
   return (
-    <section id="projects" className="section bg-charcoal text-ivory">
+    <section id="projects" className="section texture-paper">
       <div className="container-editorial">
-        <p className="eyebrow text-ivory/50">Space Shaped by Purpose</p>
-        <h1 className="heading-display mt-4 max-w-2xl text-4xl sm:text-5xl">
-          ECR Residence Chennai
+        <p className="eyebrow text-terracotta">The Space Journal</p>
+        <h1 className="heading-display text-balance mt-6 max-w-3xl text-5xl text-brown sm:text-6xl md:text-7xl">
+          The Space Journal
         </h1>
-        <p className="mt-6 max-w-xl text-lg leading-relaxed text-ivory/70">
-          A look at the spaces we&apos;ve designed, the details we&apos;ve crafted, and
-          the ideas we&apos;ve brought to life. Explore our work, one project at a
-          time.
+        <p className="mt-8 max-w-xl text-lg leading-relaxed text-charcoal/70">
+          Projects, stories and lived spaces — a curated journal of the homes,
+          materials and ideas we&apos;ve brought to life, one room at a time.
         </p>
       </div>
 
-      <div className="mt-16 flex flex-col">
+      <div className="mt-16 flex flex-col sm:mt-20">
         {GALLERY.map((category, index) => (
           <CategoryBlock key={category.label} index={index} {...category} />
         ))}

@@ -11,17 +11,20 @@ export default function Footer() {
             <p className="heading-display text-xl">Hash Theory</p>
           </div>
           <p className="mt-2 max-w-sm text-sm text-ivory/70">
-            Inspired by the depth, vastness and layers of the ocean.
+            Every Space Has a Theory.
           </p>
         </div>
         <div className="flex gap-10 text-sm">
           <div className="flex flex-col gap-2">
             <span className="eyebrow text-ivory/50">Studio</span>
-            <a href="#our-story" className="text-ivory/80 hover:text-ivory">
-              Our Story
+            <a href="#philosophy" className="text-ivory/80 hover:text-ivory">
+              Philosophy
             </a>
             <a href="#what-we-do" className="text-ivory/80 hover:text-ivory">
               What We Do
+            </a>
+            <a href="#projects" className="text-ivory/80 hover:text-ivory">
+              Space Journal
             </a>
           </div>
           <div className="flex flex-col gap-2">

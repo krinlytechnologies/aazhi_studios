@@ -62,6 +62,7 @@ export default function VillaJourneyExperience() {
   const [staticFallback, setStaticFallback] = useState(false);
   const [videoReady, setVideoReady] = useState(false);
   const [videoFailed, setVideoFailed] = useState(false);
+  const introRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     const query = window.matchMedia("(prefers-reduced-motion: reduce)");
@@ -114,6 +115,7 @@ export default function VillaJourneyExperience() {
       (context) => {
         const { desktop } = context.conditions as { desktop: boolean };
         const header = document.getElementById("site-header");
+        const intro = introRef.current;
 
         gsap.set(bridge, { opacity: 0 });
 
@@ -121,6 +123,7 @@ export default function VillaJourneyExperience() {
           // No scroll-scrubbed hero to hide it behind, so keep the header visible
           // and usable throughout — the hide/reveal dance below is skipped entirely.
           if (header) gsap.set(header, { opacity: 1, pointerEvents: "auto" });
+          if (intro) gsap.set(intro, { opacity: 0, pointerEvents: "none" });
 
           // Stable poster frame, no scroll-scrubbed video. Only the first beat is
           // shown — the rest stay hidden rather than overlapping at the same spot.
@@ -130,11 +133,19 @@ export default function VillaJourneyExperience() {
         }
 
         if (header) gsap.set(header, { opacity: 0, pointerEvents: "none" });
+        if (intro) gsap.set(intro, { opacity: 1, pointerEvents: "none" });
 
         gsap.set(beats, { opacity: 0, y: 14 });
 
         const lastFrame = VILLA_JOURNEY_SEQUENCE.frameCount - 1;
         const textTl = gsap.timeline({ paused: true });
+
+        // The brand intro (logo + tagline + scroll cue) holds while the
+        // visitor is still at the very top, then dissolves as soon as they
+        // start scrubbing the walkthrough — it never reappears.
+        if (intro) {
+          textTl.to(intro, { opacity: 0, duration: 0.03, ease: "power1.in" }, 0);
+        }
 
         VILLA_JOURNEY_ASSIGNED_TEXT_BEATS.forEach((beat, i) => {
           const el = beats[i];
@@ -265,6 +276,24 @@ export default function VillaJourneyExperience() {
       />
 
       <div className="absolute inset-0 bg-gradient-to-t from-charcoal/70 via-charcoal/5 to-transparent" />
+
+      <div
+        ref={introRef}
+        className="pointer-events-none absolute inset-0 z-10 flex flex-col items-center justify-center gap-6 bg-charcoal/30 px-6 text-center"
+      >
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src="/logo-transparent.png" alt="" aria-hidden className="h-16 w-auto sm:h-20" />
+        <div>
+          <h1 className="heading-display text-4xl sm:text-5xl md:text-6xl">
+            Step Into Our World
+          </h1>
+          <p className="eyebrow mt-4 text-ivory/70">Every Space Has a Theory</p>
+        </div>
+        <div className="absolute bottom-10 flex flex-col items-center gap-2 sm:bottom-14">
+          <span className="block h-8 w-px animate-pulse bg-ivory/60" />
+          <span className="eyebrow text-xs text-ivory/60">Scroll to begin the walkthrough</span>
+        </div>
+      </div>
 
       {VILLA_JOURNEY_ASSIGNED_TEXT_BEATS.map((beat, i) => (
         <div

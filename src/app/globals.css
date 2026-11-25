@@ -3,8 +3,11 @@
 :root {
   --color-ivory: #f1eae0;
   --color-brown: #4a382d;
+  --color-walnut: #4a382d;
   --color-stone: #d2c2ad;
-  --color-charcoal: #34332f;
+  --color-beige: #e7dcc8;
+  --color-terracotta: #a85a3a;
+  --color-charcoal: #2a2621;
   --background: var(--color-ivory);
   --foreground: var(--color-charcoal);
 }
@@ -12,7 +15,10 @@
 @theme inline {
   --color-ivory: var(--color-ivory);
   --color-brown: var(--color-brown);
+  --color-walnut: var(--color-walnut);
   --color-stone: var(--color-stone);
+  --color-beige: var(--color-beige);
+  --color-terracotta: var(--color-terracotta);
   --color-charcoal: var(--color-charcoal);
 
   --color-background: var(--background);
@@ -53,4 +59,19 @@ body {
   letter-spacing: 0.18em;
   text-transform: uppercase;
   font-weight: 500;
+}
+
+/* Subtly textured, old-money paper ground for the Space Journal. A faint
+   grain + vignette rather than a flat fill, applied as background layers so
+   it never fights with foreground content. */
+.texture-paper {
+  background-color: var(--color-beige);
+  background-image:
+    radial-gradient(circle at 20% 20%, rgba(74, 56, 45, 0.05), transparent 45%),
+    radial-gradient(circle at 80% 70%, rgba(74, 56, 45, 0.05), transparent 45%),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.035'/%3E%3C/svg%3E");
+}
+
+.text-balance {
+  text-wrap: balance;
 }

@@ -2,9 +2,9 @@ import Link from "next/link";
 import EnquiryModal from "@/components/EnquiryModal";
 
 const NAV_LINKS = [
-  { href: "#our-story", label: "Our Story" },
+  { href: "#philosophy", label: "Philosophy" },
   { href: "#what-we-do", label: "What We Do" },
-  { href: "#projects", label: "Projects" },
+  { href: "#projects", label: "Space Journal" },
   { href: "#contact", label: "Contact" },
 ];
 
